@@ -1,0 +1,133 @@
+# Lecture 19 - Backups
+
+### DevOps
+- bridge dev and operations ?
+## Cloud Service Provider Data
+- 100 ZB data/year (ZB = 10^21 bytes)
+	- somewhat misleading, just an estimate
+	- ~90 is duplicated data
+	- backups are a real problem
+- roughly 50% is in the cloud ( amazon, google, microsoft, etc )
+- chews up a lot of energy
+- movement to reduce the footprint
+	- one way is reducing backup number
+### Cheaper Backups
+- create less data in the first place
+	- compression ( uses CPU time instead, need to balance )
+- backup less often ( safety tradeoff )
+-  incremental backups ( save only what has changed, not backups )
+	- variant of compression 
+	- more fragile, propagates 
+- selective backups
+	- just the important stuff
+- Snapshot
+	- not a full backup ( in most cases )
+- Staging: backup to cheaper devices
+	- ex flash -> hard disk -> optical tape (secondary backup)
+- Redundancy in your devices - (RAID)
+	- makes drives more reliable
+- corollary: check your backups - dont blindly trust it
+### Incremental Backups
+- File Level
+	- each file has computed time at which backup is made = T
+	- inremental - save files whose timestamps are > T
+- Issues
+	- assume clock is monotomically nondecreasing
+	- what if a file gets deleted
+		- still recoveer it 
+		- files also includes directories + contets
+- Within a file
+	- F -> F'
+	- `diff -u F F' >t`
+	- `patch <t F`
+	- insert line , delete lines, replace (insert+delete) lines 
+	- t = edit script, to reproduce F' given F
+		- file recover depends on these commands
+### More Cheap Options
+- Automated Data Grouping ( auto rm )
+- Deduplication 
+	- automatically deletes copies and replaces them with a single copy
+	- find all files equal to F, for each file: remove it and create a hard link from F to G
+	- cheaper to backup 
+	- what id people need that file
+		- soln: Copy on Write, share contents only while ?? to? ???/
+		- problems on CoW 
+			- lose metadata, ex permissions
+				- soln: tighter definition or equality
+			- Capacity Counting; run out of space on device
+	- block level deduplicatoin
+		- divide file system into blocks
+		- doesnt repreat copies of blocks
+		- only one copy of each distinct block
+		- default for  some file systems
+		- single bad blocks can be bad in multiple files
+- Multiplexing
+	- save by using a single device
+	- ex. several drives 
+	- takes longer, but save money
+
+## Backups and Encryption
+- why do we want this?
+	- dont trust our cloud service provider ?
+	- dont trust operation staff ?
+	- data must be encrypted for other reasons
+
+### File System + Versioning/Backups
+- trying to have underlying system care abt backups for us so we dont have to worry abt it
+- Do applications need to know about all of these versions/backups ?
+	- Method A: apps need to know
+		- ex. file versioning system , (Files-11)
+		- `ls -lv` will show `foo.c;1 foo.c;2`
+		- multiple versions visible
+		- issues
+			- how many versions can we get ? Too much to manage ? ( max for Files-11 2^16 versions )
+		- ex. emacs w certain config will create versions of file
+	- Method B: apps are oblivious about versions
+		- normal reads and writes
+		- ex. snapshot
+			- underlying system takes a sc (file system clones itself) of all the files and makes it visible later on
+			- look back at the clone
+			- ex. seasnet does this - NetApp 
+	- Version Control
+		- like Files-11 but more useful for software developers
+		- what options are available ?
+		- History of version control
+			- SCCS 1972 built for research, rewritten in C for unix
+				- for each file F, thers a history file s.F containing the history of F , contents: lines all all versions of F interleaved in increasing order
+				- start of s.F has metadata of the history (author,date,commit msg,...)
+				- cost of retrieval proportional to size of hist
+				- worked but kept by ATT	
+			- free alternative to SCCS: RCS
+				- like sccs, but author didn't like retrieval cost
+				- put history of F in RCS/F,v
+					- meetadata at start
+					- followed by copy of most recent version
+					- after: reverse deltas 
+			- issues ( w both )
+				- per file version control
+				- want to change mult files simultaneously
+			- CVS 1985
+				- built atop RCS, improved on the metadata
+				- single commit updates multiple files
+				- client-server software
+				- SVN = CVS on steroids
+				- issues
+					- linux kernel: CVS->SVN->BitKeeper(proprietary)
+					- clash bw linux ppl, Git invented as a Bitkeeper replacement 
+					- BitKeeper replaced by Git, BitKeeper eventually went open src, but linux ppl already moved on
+				- what makes these efforts work, make changes without fights 
+### Compiler Internals
+- Stuff thats seen as magic - how does it actually work
+- So, for C/C++, there are phases
+	- preprocessing
+	- assembly code generation
+	- assembler to object file
+	- linker
+	- loader 
+- But these phases are obvious, exceprt the code generation one
+	- how are these compilers built ?
+	- issue, may have many languages (C,JS,PY), and many computer architectures (x86, ARM)
+	- L languages and M machines -> LxM compilers, lot of time 
+	- instead gcc/clang/other compilers will instead have common compiler internals, and L frontends and M backends, backernds make assembly
+	- this way, we have L+M work+1
+	- 

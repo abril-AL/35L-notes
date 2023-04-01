@@ -1,0 +1,187 @@
+{
+  "main": {
+    "id": "e7b56efcafb15747",
+    "type": "split",
+    "children": [
+      {
+        "id": "236b8b8bcca3805b",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "198522d3f188d546",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Assignment 3.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "57015d42500da020",
+    "type": "split",
+    "children": [
+      {
+        "id": "7ae04e52e2b97081",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "364326d081154807",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "byModifiedTime"
+              }
+            }
+          },
+          {
+            "id": "3c6a9ef9e7812b25",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "4504ab919c397ecd",
+            "type": "leaf",
+            "state": {
+              "type": "starred",
+              "state": {}
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 289.00418853759766
+  },
+  "right": {
+    "id": "1b08dbbad08509b3",
+    "type": "split",
+    "children": [
+      {
+        "id": "e9e9da2ef6b25dff",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "0b279f49f8725f0e",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "Assignment 3.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "cd2f73e4dd405e74",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "Assignment 3.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "78389aa7cf9f668a",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true
+              }
+            }
+          },
+          {
+            "id": "dff16b38e2f85387",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "Assignment 3.md"
+              }
+            }
+          }
+        ],
+        "currentTab": 3
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "obsidian-excalidraw-plugin:New Excalidraw drawing": false
+    }
+  },
+  "active": "198522d3f188d546",
+  "lastOpenFiles": [
+    "Assignment 2 - Lisp and Python scripting.md",
+    "shuf.py.md",
+    "Images/git-snapshots.png",
+    "Images/git-stages.png",
+    "Images/mergeimg.png",
+    "project.md",
+    "My Common Git Commands.md",
+    "Assignment 3.md",
+    "Lectures/Week 10/Lecture 19.md",
+    "Lectures/Week 9/Lecture 17.md",
+    "Lectures/Week 9/Lecture 18 - Character Encoding.md",
+    "Lectures/Week 8/Lecture 16.md",
+    "Lectures/Week 8/Lecture 15.md",
+    "Lectures/Week 7/Lecture 14.md",
+    "Lectures/Week 7/Lecture 13.md",
+    "Lectures/Week 6/Lecture 11  - version control continuted.md",
+    "Lectures/Week 6/Lecture 12 - Version Control (Git ).md",
+    "Lectures/Week 5/Lecture 9 - Floppy Programming.md",
+    "Lectures/Week 4/Untitled.md",
+    "Lectures/Week 4/Lecture 8 -.md",
+    "Lectures/Week 3/Lecture 6 - More Scripting.md",
+    "Lectures/Week 2/Lecture 3 - grep.md",
+    "Lectures/Week 1/Lecture 2 - Emacs.md",
+    "Excalidraw/linksDiff.md",
+    "Excalidraw/Drawing 2023-01-17 16.06.10.excalidraw.md",
+    "Lectures/Week 1/Lecture 1 - Software Construction.md",
+    "Lectures/Week 10",
+    "Discussion/Discussion Week 1.md",
+    "Discussion/Discussion Week 2.md",
+    "Discussion/Discussion Week 3.md",
+    "Lectures/Week 9",
+    "Obsidian-Win98-Edition/obsidian.css",
+    "Obsidian-Win98-Edition",
+    "Lectures/Week 8"
+  ]
+}

@@ -1,0 +1,126 @@
+git cont
+- refs
+	- refs/heads - bran
+		- ./master - is a regular file with a commit ID, head of the branch
+		- git updates this branch by modifying this file
+		- other branches will be listed here ( for now its just master)
+	- ref/remotes
+		- ./origin - reference to another commit ID or someother ID
+	- ref/tags/....
+		- Heavier weight pointers into object database, branches are lightweight ovable ones, tags not as moveable
+		- packed-refs
+			- compressed/shorter version of other refs we have in repo, less often updated so we dont have to worry abt the file changing as often
+			- put in a single file instead of distrubuted all over the place
+- we see a local repository as being like a file system, but application specific, building one data structure atop of another - how do we built this
+	- saves persistent state of files
+	- built atop ordinary Linux/POSIX file system
+	- many similar issues
+		- POSIX has mostly tree structure (links)
+		- Git objects is a directed acyclic graph
+		- similarities
+			- data vs metadata 
+				- ls -l is metadata and git commiter show metadata
+			- durability
+				- survive system outages
+				- atomicity -  when u make a change, and something happens, want actions to be either DONE or NOT DONE, not an intermediate state
+			- ex `cp a b ^C`  -> `ls -l b` , cp not atomic, okay if not whole thing is copied
+			- ex. `ln a b ^C` makes a link, partial link okay? , no, this link command is atomic
+			- ex. `echo abcd >>a ^C` appending to file a, this is not guarantted atomic, but is on Linux
+		- build an app atop this that has atomic actions
+			- git uses cheap safe/atomic operations
+	- git users need more power ( do bigger things than a mv )
+		- want a commit to be atomic even if big
+		- how to support this with smaller operations ?
+	- Representing objects 
+		- ex. a blob object - string of bytes, like a regular file in linux, operating system doesn't care what the bytes are
+		- how to get from blobs to hashes
+		- `git hash-object --stdin`
+			- SHA-1 checksum 
+				- cryptographic checksum is better, but many issues
+					- probability of hash is 1/2^N
+					- finding a byte string to match a given hash is O(2^N) - expensive
+					- finding collisions is O(2^(N/2))
+				- SHA-1 has been cracked, no longer used for serious stuff 
+				- *still used for git* - why?
+					- those attacks/weaknesses not that common 
+					- avoid the hassle
+		- Going back too our repo, commits are not blobs, so we have no objects 
+			- now run `echo 'Arma virumque cano.' | git --hash-object --stdin -w`
+			- still empty even with this blob
+			- commits are not blobs, so to get a commit ti a repository we have to build our way up, more complicated structure
+			- we can do `git cat-file -p <commit-id>`
+				- `-p` tells you contents
+				- `-t` tells you the type
+				- similar to file systems in that you have two types of files and they both have contents
+				- looks in objects and tells us whats there 
+			- trees
+				- if blob is a regular file, a tree is like a directory
+				- lets take our string and stick it into a file
+					- `echo 'Arma virumque cano.' >aeneid.txt`
+					- `git hash-object -w aeneid.txt` -> same hash
+				- we get the same hash as before (same contents which determines the has)
+				- git is smart enough to know if you try to put the same object in twice, it doesnt need to do it again because it already has it, lists same thing in git objects
+				- to put into a tree, use git index
+					- `git update-index --add --cacheinfo "type,checksum,file.txt"`
+					- tell git u plan to make a  change to the repository, an entry in the tree  where the filename will be file.txt and the contents will be the blob with the checksum, tpye of the entry is type
+					- look at an existing tree
+						- `git cat-file -p master^{tree}` 
+						- print out contents of tree that corresponds to that commit ID on the master branch
+						- We see lots of blobs and some trees inside it - subdirectories. We can look at the contents of the commitIDs inside the tree.
+					- Tree is just a list of directory entries and the columns in that list are:
+						- Mode (octal #) | Type | ID (SHA-1 checksum) | Name
+					- blob (regular file
+					- tree (directory) - list of directory entries
+						- mode (octal number) + type + ID (SHA-1) + Name (lik a filename)
+						- normal mode looks something like '100644' 
+							- last 3 are permissions
+							- leading bits refer to different things 
+								- 100 means regular files
+								- 040000 means tree
+								- tree is a node in a data structure that corresponds to a node in a file system that will eventully become a directory
+								- tree is not a directory, its an object representing a directory, tells git where to look for objects underneath the tree
+						- tree is an object, so it has an IDm a bunch of names which refer each to blobs
+						- tree corresponds to directories in file system while blobs correspond to files
+						- trees don't contain timestamp info (like ls)
+							- leave out some information, dont want that level of detail
+				- so far we updated the index w plan to put in tree
+					- `git write-tree` took the plan we gave it earlier and did it then gave us the SHA-1 of the tree we ust created
+					- `git cat-file -t <commit-id-of-tree>` will give us "tree" as the type and if we do `-p` option it gives us the blob with the test and hash and mode of the blob that we created earlier
+				- commit type
+					- specialty of git
+					- description of a tree - contains commit ID, commit message, author (name+emaii, committer, and timestamps for author&commiter, and parent commits
+					- commits are related to eachother - incremenal, so we have parents
+				- compression
+					- git uses its own algorithm, not the best
+					- no compression alg always works
+					- algs are app specific
+					- tradeoff; cpu time for compress/decompress. ram'
+					- 1:28
+				- 2 basic ideas - Huffman coding
+					- inpute byte string (256 symbols)
+					- want to generate a bit string thats smaller
+					- do this by looking at whaich bytes are the most popular
+					- for those, generate a small number of bits
+					- unpopular symbol - represent with more
+					- for english
+						- most popular e t a ... j z 
+						- we assign:   01 101 110 ... 00101101101
+						- but words with common letters can be compressed into less bytes
+					- for this to work we need to scan string and decide what they correspond to, wont work if e=01 n=01011
+						- **no bit string is a prefix of another**
+					- what were doing is building a huffman tree
+						- root is whee we start parsing, left is 0 right is 1
+						- every 'node' represent a letter for our english example
+						- given symbols and probabilities (weights), come up with an optimal huffman tree
+						- very simple algorithm
+							- start with the two least likely symbols ( small weights w1 and w2)
+							- combine thise into a single node with combined weight
+							- just repreat
+							- build the tree as you go
+					- git uses a different tree - Adaptive Huffman Coding
+						- have a sender (compresser) and recipient (decompresser)
+						- assume each symbol is equally likely
+						- sender sends first character, after both can update their huffman tree, tree is never comunicated, but use same algorithm so trees mutate the same
+						- no prior assumptions abt probabilities
+						- stored in ram - only need 256 bytes (small)
+					- 

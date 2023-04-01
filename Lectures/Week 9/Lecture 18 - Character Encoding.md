@@ -1,0 +1,188 @@
+# Lecture 18 - Character Encoding
+
+- What is a character and how do i represent it
+	- C++ is a char, represented by an integer, ASCII, hex
+		- inside the pc there's no such thing as a char, just a number that represents it
+	- software/hardware figures out what it represents
+	- char = something that corresponds to a small integer
+	- lots of things correspond to integers
+	- represents an individual "symbol" you might use in text or program
+	- How to represent
+		- used to be jsut a small number 0-63 in like 1960a
+		- not a lot of room for characters, upercase + digits + math, ran out pretty soon
+		- so few bc memory was tight, no need at the time
+		- natural string is represented by a sequence of integers, array of integers
+		- issue: not always using the entire word
+			- assume word size is 36 bits -> can take single 35 bit word and divide into 6bit chars
+			- word is an unsigned number
+			- this approach was used more commonly 
+		- revolutionary approach - IBM model 360 (?) - successful mainframe
+			- introduces byte addressing
+				- separate address for each byte
+				- used 8bit bytes and 32bit word
+				- bytes multiple of 8
+				- want it to address individual characters without having to do shifts and stuff 
+			- 64 bit words
+		- can have big words 32 64 256 ...
+		- Came up with EBCDIC (?) 8-bit byte and figure out what character it represents
+			- table with number + corresponding character
+			- issues: some letters not continuous - inconvenient char arithmetic (card punching reason...)
+- ASCII - competing character set 
+	- 7 bit character set 
+	-  0-127
+	- but, no 7 bit byte computers 
+	- so why did they do it
+		- can use top bit as a parody, exclusive or for bits that represent it
+		- single bit error detected - cant correct but we know its bad
+		- reliability argument for doing it this way
+	- ASCII won against EBCDIC 
+	- some characters - first four rows are non-printable character
+		- control characters
+	- 177 is the dell character 
+		- all bits one
+		- all holes punched in
+	- what about `char c = 0;` 
+		- nul character
+		- originally a noise byte
+	- character 7 - bell character
+	- still not good enough
+		- other languages ? french greek ...
+		- in order to adress this problem, manufacturers did alot of stuff, many mistakes
+	- Mistake #1 international standard
+		- ISC/IEC 8859 - how to support it
+		- 88591 - latin 1
+			- extend ascii to support languages that are extention of latin
+			- attempted to cover western European languages - french german spanish ...with stuff not in English
+		- little under 256 characters
+		- 8-bit characters
+		- all extentions of ascii
+		- compatable with ascii
+		- unfortunately - wasnt enough to do languages in central europe 
+		- 8859-2 central european
+		- 8859-3 southern europe
+		- 8859-4 northern europe
+	- Issues - 
+		- French Complained - later fixed latin-1 to cover frensh and other language
+		- added euro symbol
+		- many unexprected consequences
+		- these were widely used
+		- despite succes now have problems
+			- each set works in its own right
+			- how do we know what set is being used
+			- cant tell just from string of bytes
+			- this is why many files have metadata about encoding
+	- Say which encoding - content type
+		- will be in the header of http response 
+		- then can figure out what code is saying
+		- this is a **hassle** 
+		- ex. emacs needs clue / advice, same way a browser would
+	- so far so good, but what about JP KR or CN ?
+		- cant practically do chinese - up to thousands
+		- just not going to work
+		- obvious fix: 8-bit to small, go to 16-bit to cover basic chinese/japanese
+		- for the full language (standardized) - use 16-bit char
+		- instead of char, use **short** 
+		- this approach used by many - ex microsoft
+		- downside 
+			- completely **incompatible** with what we have
+			- ??
+			- file is bloated - odinary ascci file is now twice as much in size
+		- other computer vendors
+			- use sequence of bytes to represent them 
+			- and stick to single bytes for ascii
+			- **Multiibyte** characters
+				- ex. take 2 bytes to represent say a kanji character
+				- have to be ablt to tell difference
+				- common: use top bit
+					- 0 = ascii
+					- 1 = other
+				- Shift JIS approach taken by microsoft and ascii (company) 
+					- 1 byte = ascii + 2 changes
+					- 2 byte = 15 bit number
+				- cant go to middle of a byte string and see what the character is
+					- at any point: 120 = lowercase 's' or second half of 2 byte char ?
+		- EDC has similar pattern
+				- EUC-JP, EUC-CN
+- UNICODE Consortion
+	- such a well known problem - international consortion
+	- single agreed upon assignment
+	- now has over 149K assignments
+	- originally wanted 16bit set
+	- will keep growing
+	- controversy over what goes in
+		- extinct languages ? yes for scholars
+	- biggest disagreement
+		- tries to unify chinese japanese and korean
+		- big nationalistic arguments - still here
+# UTF-8
+- Whatever we use to represent Unicode must be extensible
+	- in the 1990s dell lab discovered new way - applied it to Unicode
+	- UTF-8 
+	- upwards compatible with ASCII
+	- wont confuse ASCII byte with something else
+	- consist with top bit off (0) 
+	- at random in string, can see if its ascii
+	- in the middle of any sequence you can find boundary of multibyte characters
+	- general enough to ??? larger set?
+	- 3 kinds of bytes
+		1) 0xxxx... just ascii character - leading bit is 0
+			- every ascii string is a UTF-8 string
+		2) 10xxxxxx... seven bits - continuation byte - never the leading byte of UTF-8 byte
+		3) everything else is a length + leading bit byte
+	- simplest byte of this form
+		- ????
+	- 0xxx... 0-7f 128 characters same as in ascii
+	- one bigger U+0080 - 128
+		- represented: 110xxx|yyyyyy 
+		- ???
+	- FIX THESE
+	- next: 1110xxxx|10yyyy|10zzzz
+	- 11110xxx|yyyyyy|10zzzz|10wwww
+	- can only go up to U+10FFF 
+		- dont allow all possible patterns - 10 =/= FF
+		- mostly so we can add more later
+	- attacks will try to exploit corner cases
+		1) suppose we see 2byte sequence 110000 10111????
+			- character represents dell character 
+			- skrewy, thats an ascii character
+			- 2 different ways to spell it 
+				- ascii or UTF (2 bytes w bunch of zeros)
+			- bc two ways to spell, 'UCLA' =/= 'UCLA' all the time
+			- so, this trick is not allowed - report as an error - not UTF-8
+				- encoding error - doesnt correspond to char
+				- bad guys will send it and hope you dont do the checking
+		2) continuation byte, no length byte that says its a part of the string
+			- ex. first byte of string is contunuation byte
+		3) Byte that looks like 111110 
+			- cant have 5 byte sequence
+			- not valid
+			- start of buffer problem
+		4) end of string problem
+			- have initial byte of UTF-sequence says mult bytes
+			- what if it ends before the length is completed
+			- incomplete data stream ( incomplete UTF-8 , cant translate it all )
+	- big idea, this is done by language usually, but if you want the bits, need to track that conversion and error
+
+# Backups
+- going to be toast if u dont do it right
+- estimated "80%"" of file storage is backups 
+	- spending $ and nrg on backups
+	- can we get by with less ? probably not
+- Problems suggesting you need backups
+	- Lose data - you lose the drive/stolen/etc
+	- Drive Failure - dies, oscilloscope too much work, lose data
+	- See what data looked like before - history
+	- you mistake trash a file
+	- Data corrupted - drive corrupted, modern disk/flash better at avoiding this nowadays
+	- Malicious Crashing - ransomware
+- What to Back Up ?
+	- everything ? whats everything ?
+		- content of files
+		- metadata for each file
+	- mechanism for backing up
+		- abstractly - consider each file is as a byte sequence ????
+		- concretely - take the data and look at the device its stored on
+			- stored as series of blocks, just back up the underlying device blocks
+			- traditionally 8 KiB
+			- might be wasteful if u backup junk blocks, advantage if all blocks are in use
+		- 

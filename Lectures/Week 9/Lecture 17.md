@@ -1,0 +1,122 @@
+- Git Compression continued
+	- zlib/gzip
+		- Huffman compression (adaptive)
+		- Dictionary Compression - other form of compression
+			- can compress file or encode data we send over network
+			- basic idea: sender and recipient both maintain a dictionary of words
+			- have a dictionary that's numbered {'word': number}
+			- instead of sending words, send the numbers
+			- can represent a word with an 8bit number
+			- in practice the dict will be bigger (say 65K words, each word is 2 bytes)
+			- once they agree on dictionary, we get compression from words to bits ( often smaller )
+			- how to deal with punctuation - word can include  anything
+				- ex 'hello,' or '   world!' 
+			- can be better than huffman, huffman is yte by byte or symbol basis, cant try to compress two commom pairs of symbols any better than just individual symbol compression
+			- dictionary has good compression if input has repreated string
+			- if we assume sender/recipient have good dictionaries we can use this approach
+				- how do we figure out good dictionary ?
+				- no single dictionary works for all 
+				- instead, common for dictionary compression to also be adapted
+				- sender starts with empty dictionary amd send an index or character
+					- ex send 'H' char, recipient accepts it and adds it to dictionary
+					- then sends 'He', added
+					- building up dictionary
+					- eventually sender will stop w words and send numbers, and recipient looks to its dictionary
+					- as long as they agree on dictionary construction algorithm, can send letters/numbers
+			- problem with this approach, **Memory**
+				- how big does a dictionary get 
+				- once dict gets large, we update it so less used get kicked
+				- Dictionary Window
+					- suppose we chose window of 64KiB
+					- sender/recipient have to track most recent 64 k worth of data sent/received
+					- look for repeats, sends offset(?)
+					- can get faster based on things like hashing etc
+		- zlib uses both
+			- first uses dictionary compression, the ouput is symbols
+			- these symbols are either offsets into the dictionary, or literals
+			- take that string of symbols and use huffman coding on them
+			- get a bit string that represent the string of symbols bbut is shorter
+			- distionary comp at low level and huff on that
+			- or can do the opposite, as long as sender/recipient agree
+			- What can go wrong ?
+				- bad block of compresses data
+				- uncompressed data - only lose some
+				- compressed data - ruins everything else
+				- strain on underlying system (drives), need a reliable system underneath
+- Other Git Features
+	- important to have a feel for implementation of git features to understand problem/solutions
+	- Tagging
+		- would like convenient names for commits ( short names )
+		- could do `git checkout v27`
+		- can't use branches?Noo because their moveable
+		- want the tag to be "frozen there"
+		- run `git tag` - lists current tags in alphabetic order
+		- How to create a tag ?
+			- `git tag <tag-name> <commit-id>`
+			- all we've done is name the commit
+		- Annotated Tags 
+			- we also want to give it a reason
+			- meta-information about the 'why'
+			- `git tag -a <tag-name> -m "reason"`
+		- how is it implemented ?
+			- `ls -ltr $(find .git -type f) | less` - bunch of files, at the end is the files we just updated after the tag creation
+			- we see refs was listed - refs/tags contains references that happen to be tags, each file: name is the name of the tag, contents is SHA-1 checksum of the commit, 
+			- can tag any object in git, usually do it to commits
+			- we also see that an annotated tag is represented by an object, that is in git repo, ordinary tag is not
+			- `cat .git/refs/tags/annotated-tag` - we get an object id, can look at that object with `git cat-file -t <obj-id>` , type is tag, `-p` shows us: tagger time and other metadata, and the actual annotation 
+			- treated as important as a commit, same amount of metadata
+			- when trying to track object stuff, this extra infor helps figure out history of the project
+		- signed tag
+			- cryptographic authentification for the tag you make
+			- not jut text, way to verify it's really you
+	- Submodules 
+		- might use them if project wants to use some other package/library and tei our project more tightly than an import, do so with commit id
+		- its like a "pointer" to another project
+		- contains which commit of the other project we want to have
+		- ex. diff - diff utils uses GNU, has ptr to that
+		- event: we want to switch to a different version of GNU library
+			- `git submodule foreach git pull origin master`
+			- says for each submodule doa pull on that submodule
+			- git diff shows that we updated the "pointer"
+		- `git commit -m 'msg' gnulib` - update to our project
+		- decouple as much as possible our project, just track which version we're using
+		- less painful than taking all the code from the other projeccct
+	- Stashing
+		- basic scenario, need to change attention to other thing
+		- git diff would output something trivial
+		- say you need to drop what your doing, change attention to different branch
+		- to switch, `git checkout <branch>` would yell at us, lose work if u do `-F`, BAD approach
+		- need to save changes before you switch
+			- create new branch `git checkout -b temp`
+				- has what we have
+				- commit the changes `git commit -m 'first-cut'`
+				- still not good, because we commit junk code, bad code, not clean commit
+			- instead can `git stash push`
+				- push a new stash onto stack of stashes
+				- pushes a copy of our changes onto the stack of stashes
+				- then we can safely checkout ( even with `-F`)
+				- then do work as needed+commit
+				- can then switch back to main branch
+				- get back our changes with git stash pop
+				- can get back to work
+		- `git stash list`
+			- lists our stashes
+		- other techniques
+			- `git diff >mychanges.diff`
+			- contains the changes'
+			- checkout with `-F`
+			- then bring in changes with `patch -p1 <mychanges.diff`
+			- less commands and have more tangible changes, can send that patch
+- How to communicate ideas to other developers
+	- share a repository
+	- communicate with commits on different branches, tell devs to check them out, pull them and look
+	- clunky because it requires a central repository
+	- common to instead send patches by email or other technique
+	- simple way `git diff | mail eggert@ucla.edu`, not what reviewers always want, not enough info/metadata - no one really does this
+	- `git format-patch` - outputs metadata
+		- creates files that can be sent for review
+		- `git send-email <patches>` 
+		- old school, but can review without looking at source code
+		- other machine can then do `git am 0*` - automatically merge these contents
+		- part of software supply issue
+		- still want to be careful about what code u bring in from outside

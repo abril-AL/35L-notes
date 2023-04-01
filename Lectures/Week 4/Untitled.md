@@ -1,0 +1,171 @@
+IP - internet protocol
+- 4 and 6 most popular
+- want mult versions active at the same time, need to support both
+- IPv4 packets have header and contents (limited size for packets)
+	- length - how big packet is, where to split from nextm packet
+	- protocol number - 
+	- soure/destination addresses - IP addresses, evry node has a unique address, 32 bit number
+		- IPaddress  notation: dotted byte 0-255 , ex `129.64.2.39` , readable to avg user
+	- checksum - if packet s corrupted, recipient can look at checksum to see if its corrupted
+		- not a guarantee , not 100%
+	- TTL - time to live 
+		- integer st its decremented everytime it reaches a router
+		- avoid packets going into internet, and never leaving internet / arriving to dest
+		- prevents filler packets that wont get anywhere
+- IPv6 (1996)
+	- difference - number of distinct IP adresses
+	- 32 (v4)  => wide addresses (v6)
+	- larger headers, less efficient
+	- Other features
+- Compatability
+	- ??
+	- v4 -> v6 host works
+	- v6 -> v4 , gateway host for translation
+	- NAT - network address translation ( + other stuff)
+- UDP - User dataground protocol
+	- thin layer atop IP
+	- more direct , more low level stuff
+	- complicated for end user stuff (?)
+	- goal: be a general purpose protocol simple applications can use for simple goals
+- TCP - Transmission Control Protocol
+	- implements stream of data thats **reliable** , unlike other protocols
+	- 1 protocol solves problems
+	- 2 provides that stream of data is **ordered** , 
+	- 3 error checking - own checksum
+	- how it provides
+		- division of streams into packerts
+		- flow control - slows down so we dont overload
+		- reassembly - order packets agian, if some are missing or corrupted, handles retransmission
+			- reliability at cost of latency, ask for data in between
+	- both ends have to know theyre using same protocol
+- in general shouldnt trust next layer down/up
+	- checksums at all layers just incase, still no guarantee
+- Two sample protocols - 
+	- RTP - Real Time Transport Protocol
+		- runs atop UDP
+		- less reliable streaming
+		- but streaming is (close to) real time
+		- allow for some error 
+		- TCP would jitter, stops and waits for packet
+		- prioritize live over (?)
+	- HTTP - hypertext transfer Protocol (1991)
+		- very simple
+		- sender opens chaannel to server, sends TCP request (reliable)
+		- answer (webpage) shipped back by server, and connection is closed
+		- why it closes - to keep it simple
+		- application level protocal at the beginning, now we built more complex stuff atop of it (?)
+	- C-u M-x telnet  - set up tcp connection
+		- ?? Port: 80  ( or http )
+		- prot ver, 3 digit code about if request was successful
+			- 200 - OK , 404 - not found 
+	- More protocols
+		- HTTP 1.1 (1997) 
+			- allowed for breaking webpages into pieces
+			- allowed for keeping the connection open
+				- keep making req. + response
+			- rare to see 1.0 or 1.1 bc we send data in the clear, everyone can figure out what the data is
+		- HTTPS
+			- http atop crypto
+			- all the packets have contents that look like giberish
+			- contents of rewuest/response are encrypted
+			- not perfect, meta data not protected
+			- contents are encrypted, not totally safe, better than nothong
+		- HTTP 2.0 (2016)
+			- supports encryption
+			- further tuning
+			- header compression
+				- save on overhead by compressing
+				- greater burdern on CPU
+			- server push - server can send data on its own
+			- pipelining - send all requests at one, server can respond in different orders, can get stuff done in ess time
+				- but, client has to know what it wants
+			- multiplexing
+				- run several logical connection over same tcp connection
+				- different (?) connections over same tcp connection
+		- HTTP3 
+			- goal: improve latency
+			- uses UDP not TCP
+			- uses new protocol - Quick , tcp substitute with support for real time streams\
+				- merger of TCP and RTP, can get relible stream if they want it
+			- attacks head of the line delays, 
+				- TCP stops when packets missing
+				- Quick will choose to drop or let browser decide, more options
+		- Web = HTTP and HTML 
+			- html is the strings that gets sent
+			- derived from SGML format ( standard generalized markup language )
+				- want structure to text
+			- `<p></p>` start and end specified
+			- attributes `<p ATTR> , <p style = italic>`
+			- textual representation of a **tree
+			- can ship tree to other publisher
+			- internal nodes have attributes, leaves is text
+		- Difference between HTML and SGML
+			- nice general purpose way to organize it
+			- needed specializations of types of trees
+			- Document Type Definition 
+				- what node types are available ? for each node type, what attributes ? what subtree types ? what text can be underneath it ?
+			- HTML = SGML + DTD (?) for ther web
+				- `<html>... < > < > `
+				- take sgml and do it online (?)
+
+- Basic Appereance of HTML
+```html
+HTML element:
+- represents internal node in the tree
+- sourounded by tags
+- tag hasnotation <tag> </tag>
+- in some cases, can ommit closing tag
+	- <tag> <otherTag> </tag> will close at end of tag
+- different notation:
+	- <tag/> both a beginning and opening tag
+	- void element - elemeent with nothing in it
+	- same as <tag></tag>
+- Elements can have attributes
+	- in opening tag
+	- <tag key="value" key2="value"></tag>
+	- can change things like style of paragraph
+	- ex. Here is a <a link='web.ucla.org'>link</a>
+- Entities
+	- every letter is an entity
+	- include ordinary text
+	- include thins that start with '&'
+	- dash (?)
+	- &amp - ampersand
+	- &lt - less than
+	- &gt - greater than
+```
+
+- HTML had organic growth
+- at first defined by browsers
+- added elements, but led to chaos if every browse had own set
+- early on, people standardizing it defined DTDs for HTML 1,2,3,4
+	- cut down variation
+	- but, standard broke down
+	- web evolved to rapidly
+	- didnt have versions devs wanted
+- most populat version HTML5, doesnt use DTD
+	- uses living standard
+	- like a DTD, but latest version
+	- people that keep it up dont do uhh(?)
+- Back to the tree in the browser
+	- modeled after DOM Document Object Model
+		- what sort of trees we can have and how we access
+		- DOM provides API for navigating through these trees
+		- browser got html, build it, then can walk through it
+		- can also manipulate the tree
+			- inspect and change nodes + attributes
+			- doable in many languages, most popular is javascript YADL(?)
+
+- JavaScript ( in 2 mins )
+	- learn by doing js....
+	- simple side of js
+	- tempting to use w/o understanding..
+	- not just python, fundamental differences
+
+
+
+
+
+
+
+
